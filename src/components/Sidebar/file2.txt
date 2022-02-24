@@ -1,0 +1,275 @@
+<template>
+
+<v-container>
+      <v-row>
+          <v-col>
+              <v-card>
+              <v-card-title class="green white--text">
+                  <h1>Tasks</h1>
+              </v-card-title>
+              <v-card-text>
+                <v-simple-table>
+                    <template v-slot:default>
+                    <thead>
+                        <tr>
+                        <th class="text-left">
+                            Task
+                        </th>
+                        <th class="text-left">
+                            Assigned
+                        </th>
+                        <th class="text-left">
+                            status
+                        </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                        v-for="(item, index) in tasks"
+                        :key="item._id"
+                        >
+                        <td>{{ item.task }}</td>
+                        <td>{{ item.assigned }}</td>
+                        <td v-if="item.status==true">case is open</td>
+                        <td v-else>case is closed</td>
+                        <v-btn @click="remove(item._id, index)"
+                                  >Delete</v-btn
+                                >
+                        </tr>
+                    </tbody>
+                    </template>
+                </v-simple-table>
+              </v-card-text>
+          </v-card>
+          </v-col>
+            <!--<v-col>
+               <ul>
+                  <li v-for="c in crimes" :key="c.key">
+                      old method <router-link :to="`crime/${c._id}`" > {{c._id}} </router-link> - {{c.name}} 
+                      <span @click="setSelectedCrime(c)">{{c._id}}</span> - {{c.name}}
+                  </li>
+              </ul>
+            </v-col>-->
+            <v-col cols="4" v-if="registerTask">
+                <v-card>
+                    <v-card-title class="red white--text">
+                        Register Task
+                    </v-card-title>
+                    <v-card-text>
+                        <v-text-field type="text" v-model="task.task" placeholder="Name of task"> </v-text-field>
+                        <br>
+                        <v-text-field type="text" v-model="task.assigned" placeholder="who is assigned"> </v-text-field>
+                        <br>
+                        <p>is the case open?</p>
+                        <v-checkbox type="checkbox" v-model="task.status" placeholder="status"> </v-checkbox> <p>yes</p>
+                        <br>
+                        <v-text-field type="number" v-model="task.crimeId" placeholder="who is assigned"> </v-text-field>
+                        <br>
+                        <v-text-field type="number" v-model="task.projectId" placeholder="who is assigned"> </v-text-field>
+                        <br>
+                        <v-btn @click="postTask(task)">Add</v-btn>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+            <v-col cols="2" v-else>
+                <v-btn @click="registerTask = true">Register Task</v-btn>
+            </v-col>
+      </v-row>
+  </v-container>
+</template>
+
+
+<script>
+import api from '../data/api'
+
+export default {
+    created() {
+        this.getTasks()
+    },
+  
+    data: function () {
+        return{
+            
+            task: {},
+            tasks: [],
+            registerTask: false,
+           
+           
+
+        }
+    },
+    methods: {
+       
+       
+         getTasks() {
+            api.getTasks().then(res => {
+                console.log('HTTP GET REQ ALL TASKS', res)
+                this.tasks = res.data.data
+            });
+        },
+        postTask(task) {
+            task.status= false
+            task.projectId = 'arim-2021'
+            console.log(task)
+            api.postTask(task).then(res => {
+                this.tasks.push(res.data.data)
+                console.log(res)
+                this.task = {}
+                this.registerTask = false;
+              
+                
+            });
+          
+        },
+        remove(id, index) {
+      api
+        .delTask(id)
+        .then((res) => {
+          console.log("Action success mabey show alert?", res);
+          this.tasks.splice(index, 1);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+       
+
+
+        },
+    
+     computed: {
+    user() {
+      return this.$store.getters.user;
+    },
+  },
+}
+</script>
+
+<style>
+ body {
+    overflow-x: hidden;
+ }
+
+/* Toggle Styles */
+
+#wrapper {
+    padding-left: 0;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled {
+    padding-left: 250px;
+}
+
+#sidebar-wrapper {
+    z-index: 1000;
+    position: fixed;
+    left: 250px;
+    width: 0;
+    height: 100%;
+    margin-left: -250px;
+    overflow-y: auto;
+    background: #000;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    width: 250px;
+}
+
+#page-content-wrapper {
+    width: 100%;
+    position: absolute;
+    padding: 15px;
+}
+
+#wrapper.toggled #page-content-wrapper {
+    position: absolute;
+    margin-right: -250px;
+}
+
+/* Sidebar Styles */
+
+.sidebar-nav {
+    position: absolute;
+    top: 0;
+    width: 250px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sidebar-nav li {
+    text-indent: 20px;
+    line-height: 40px;
+}
+
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #999999;
+}
+
+.sidebar-nav li a:hover {
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: none;
+}
+
+.sidebar-nav > .sidebar-brand {
+    height: 65px;
+    font-size: 18px;
+    line-height: 60px;
+}
+
+.sidebar-nav > .sidebar-brand a {
+    color: #999999;
+}
+
+.sidebar-nav > .sidebar-brand a:hover {
+    color: #fff;
+    background: none;
+}
+
+@media(min-width:768px) {
+    #wrapper {
+        padding-left: 250px;
+    }
+
+    #wrapper.toggled {
+        padding-left: 0;
+    }
+
+    #sidebar-wrapper {
+        width: 250px;
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        width: 0;
+    }
+
+    #page-content-wrapper {
+        padding: 20px;
+        position: relative;
+    }
+
+    #wrapper.toggled #page-content-wrapper {
+        position: relative;
+        margin-right: 0;
+    }
+    h1{
+        text-decoration: underline;
+    }
+}
+</style>
